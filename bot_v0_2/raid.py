@@ -2,6 +2,7 @@ import gspread
 import sqlite3
 import config
 import pandas as pd
+import pylab
 
 conn = sqlite3.connect('raid.db')
 cursor = conn.cursor()
@@ -54,6 +55,11 @@ def raid_obr(akronim):
         for j in range(8):
             person_damage[raid_mass[1]][3]+=(int(raid_mass[j+6])+int(raid_mass[j+6+8]))*boss_hp_miss[int(raid_mass[3])][j]
 
+    if (max_attack%4 == 0):
+        max_attack=max_attack-4
+    else:
+        max_attack=max_attack-(max_attack%4)
+
     for key in person_damage:
         if person_damage[key][2]==0:
             person_damage[key].append(0)
@@ -63,12 +69,18 @@ def raid_obr(akronim):
             person_damage[key].append(0)
         else:
             person_damage[key].append(person_damage[key][2]/person_damage[key][1]/1000000)
+        if person_damage[key][1]>max_attack:
+            person_damage[key].append(100)
+        else:
+            person_damage[key].append(100*person_damage[key][1]/max_attack)
     raid_data = pd.DataFrame.from_dict(person_damage, orient='index')
     print(raid_data)
-    if (max_attack%4 == 0):
-        max_attack=max_attack-4
-    else:
-        max_attack=max_attack-(max_attack%4)
-    print(max_attack)
 
-    return("Ok")
+    print_table(raid_data)
+    return("ok")
+
+
+def print_table(data):
+    pylab.table(cellText=data.values, rowLabels=data.index,colLabels=data.columns, loc="upper center")
+    pylab.axis("off")
+    pylab.savefig('saved_figure.png')

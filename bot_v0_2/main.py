@@ -12,6 +12,7 @@ async def raidend(ctx, akronim):
     roleID = config.role[akronim];
     role = utils.get(ctx.guild.roles, id = roleID);
     flag = True; #надо исправить на False
+    await ctx.send(role.members)
     for member in role.members:
         await ctx.send(member.id)
         await ctx.send(ctx.author.id)
@@ -23,6 +24,7 @@ async def raidend(ctx, akronim):
         await ctx.send("Ok");
         result = raid.raid_obr(akronim);
         await ctx.send(result);
+        await ctx.send(file=discord.File('saved_figure.png'))
 
 @bot.command()
 async def createClan(ctx, akronim):
