@@ -15,6 +15,9 @@ def raid_obr(akronim):
     exl=worksheet.col_values(number_raid+1);
     exl[3] = '-'.join(reversed(exl[3].split('/')))
 
+    cursor.execute("DELETE FROM 'Pred_{}'".format(akronim))
+    conn.commit();
+
     max_boss = 0;
     max_attack = 0;
     boss_hp = {}
@@ -26,7 +29,7 @@ def raid_obr(akronim):
     for i in range(8):
         for j in range(25):
             boss_hp[i].append(0);
-
+    sch=3
     for i in range(6,len(exl)):
         raid_mass = exl[i].split(",");
         raid_mass[0]=raid_mass[0].replace("'", "")
@@ -35,7 +38,11 @@ def raid_obr(akronim):
         conn.commit(); #import data in sql
         person_damage[raid_mass[1]]=[]
         person_damage[raid_mass[1]]=[raid_mass[0],int(raid_mass[2]),0,0]
-
+        if sch==3:
+            cursor.execute("insert into 'Pred_{}' values ('{}','{}',2,'2022-04-24')".format(akronim, raid_mass[0],raid_mass[1]))
+            sch=0
+        else:
+            sch+=1
         if max_boss < int(raid_mass[3]):
             max_boss = int(raid_mass[3]);
         if max_attack < int(raid_mass[2]):
@@ -74,7 +81,19 @@ def raid_obr(akronim):
         else:
             person_damage[key].append(100*person_damage[key][1]/max_attack)
     raid_data = pd.DataFrame.from_dict(person_damage, orient='index')
-    print(raid_data)
+
+    
+
+    cursor.execute("SELECT * FROM Pred_{}".format(akronim))
+    pred = cursor.fetchall()
+    mass_pred=[]
+    df_pred = pd.DataFrame(pred)
+    for i in pred:
+        mass_pred.append(i[1])
+    df_pred.index=mass_pred
+    print(len(df_pred[df_pred.index == "g8wn268"]))
+    print(len(df_pred[df_pred.index == "g8wn267"]))
+    #print(raid_data)
 
     print_table(raid_data)
     return("ok")
@@ -83,4 +102,4 @@ def raid_obr(akronim):
 def print_table(data):
     pylab.table(cellText=data.values, rowLabels=data.index,colLabels=data.columns, loc="upper center")
     pylab.axis("off")
-    pylab.savefig('saved_figure.png')
+    pylab.savefig('saved_figure.png', dpi = 1000)
